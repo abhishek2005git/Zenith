@@ -1,15 +1,17 @@
 import React from 'react';
-import { LayoutDashboard, Rocket, Globe, Calendar, Settings, LogOut } from 'lucide-react';
-// 1. Import Link and useLocation
+import { LayoutDashboard, Rocket, Globe, Calendar, Settings, LogOut, Heart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = () => {
-  const location = useLocation(); // Get current URL to set 'active' state
+  const location = useLocation();
+  const { logout } = useAuth();
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Rocket, label: 'Missions', path: '/missions' },
-    { icon: Globe, label: 'Tracking', path: '/tracking' }, // We'll build this later
+    { icon: Heart, label: 'My Fleet', path: '/favorites' }, // New Favorites Link
+    { icon: Globe, label: 'Tracking', path: '/tracking' },
     { icon: Calendar, label: 'Schedule', path: '/schedule' },
   ];
 
@@ -23,7 +25,6 @@ const Sidebar = () => {
 
       <nav className="flex-1 flex flex-col gap-6 w-full px-4">
         {navItems.map((item, index) => {
-          // Check if this link is active
           const isActive = location.pathname === item.path;
           
           return (
@@ -50,12 +51,14 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* Bottom Actions remain the same... */}
       <div className="flex flex-col gap-6 w-full px-4">
         <button className="w-full aspect-square rounded-xl flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 transition-colors">
           <Settings size={22} strokeWidth={1.5} />
         </button>
-        <button className="w-full aspect-square rounded-xl flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors">
+        <button 
+          onClick={logout}
+          className="w-full aspect-square rounded-xl flex items-center justify-center text-red-400 hover:bg-red-500/10 transition-colors"
+        >
           <LogOut size={22} strokeWidth={1.5} />
         </button>
       </div>

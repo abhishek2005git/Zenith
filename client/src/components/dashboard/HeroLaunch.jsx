@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNextLaunch } from '../../hooks/useLaunches';
 import { format } from 'date-fns';
+import FavoriteButton from '../ui/FavoriteButton';
 
 const HeroLaunch = ({ onOpenDetails }) => {
   const { data: launch, isLoading, isError } = useNextLaunch();
@@ -76,6 +77,10 @@ const HeroLaunch = ({ onOpenDetails }) => {
           <h3 className="text-space-accent text-sm font-mono tracking-widest mb-1 uppercase">
             Upcoming Mission
           </h3>
+
+          <div className="absolute top-4 right-4 z-20">
+       <FavoriteButton launchId={launch.id} />
+    </div>
 
           {/* SPLIT LOGIC */}
           {launch.name.includes('|') ? (

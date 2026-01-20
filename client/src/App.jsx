@@ -9,6 +9,7 @@ import Schedule from './pages/Schedule';
 // Import Pages
 import Dashboard from './pages/Dashboard';
 import Missions from './pages/Missions';
+import Favorites from './pages/Favorites';
 
 const App = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -45,6 +46,7 @@ const App = () => {
           <Route path="/missions" element={<Missions onOpenDrawer={handleOpenDrawer} />} />
           <Route path="/tracking" element={<Tracking />} />
           <Route path="/schedule" element={<Schedule onOpenDrawer={handleOpenDrawer} />} />
+          <Route path="/favorites" element={<Favorites onOpenDrawer={handleOpenDrawer} />} />
         </Routes>
       </main>
 

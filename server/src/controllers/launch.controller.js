@@ -1,13 +1,23 @@
 import axios from "axios"
 import { json } from "express";
+import getOrSetCache from "../utils/cache.js";
 
 
 export const getNextLaunch = async (req, res) => {
     try {
-        const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1', {
+
+        const key = "launch:next";
+
+        const launchData = await getOrSetCache(key, async () => {
+            const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1', {
             headers: { 'User-Agent': 'Zenith-Project/1.0' } 
-        });
-        const launchData = response.data.results[0];
+            });
+            return response.data.results[0];
+        }, 600 )
+        // const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1', {
+        //     headers: { 'User-Agent': 'Zenith-Project/1.0' } 
+        // });
+        // const launchData = response.data.results[0];
 
         // SAFETY CHECK: The Space Devs API structure is deep. 
         // We use optional chaining (?.) everywhere to prevent crashes if data is missing.
@@ -46,11 +56,16 @@ export const getNextLaunch = async (req, res) => {
 
 export const getUpcomingLaunches = async (req, res) => {
     try {
-        const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&ordering=net', {
-            headers: { 'User-Agent': 'Zenith-Project/1.0' } 
-        });
 
-        const launches = response.data.results.map((launch) => ({
+        const key = "launch:upcoming"
+        const cachedResults = await getOrSetCache(key, async () => {
+            const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&ordering=net', {
+            headers: { 'User-Agent': 'Zenith-Project/1.0' } 
+            })
+            return response.data.results;
+        }, 1800)
+    
+        const launches = cachedResults.map((launch) => ({
             id: launch.id,
             name: launch.name,
             net: launch.net,

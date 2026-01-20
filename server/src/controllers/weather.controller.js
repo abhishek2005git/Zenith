@@ -1,65 +1,69 @@
 import axios from 'axios';
+import getOrSetCache from '../utils/cache.js';
 
 // @desc    Get Cosmic Weather (Solar & Geomagnetic)
 // @route   GET /api/weather
-// @access  Public
 const getCosmicWeather = async (req, res) => {
   try {
     const API_KEY = process.env.NASA_API_KEY || 'DEMO_KEY';
-
-    // 1. DYNAMIC DATE LOGIC (Fixes the speed issue)
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 30);
     
-    // Format to YYYY-MM-DD for NASA API
-    const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-    
-    // 2. Updated URLs with dynamic date
-    const gstUrl = `https://api.nasa.gov/DONKI/GST?startDate=${startDate}&api_key=${API_KEY}`;
-    const flrUrl = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&api_key=${API_KEY}`;
+    // 2. Define Cache Key
+    const key = 'weather:cosmic';
 
-    // ... (Keep the rest of your Promise.all and processing logic the same) ...
-    const [gstRes, flrRes] = await Promise.all([
-      axios.get(gstUrl),
-      axios.get(flrUrl)
-    ]);
+    // 3. Wrap logic in getOrSetCache
+    const weatherData = await getOrSetCache(key, async () => {
+        console.log("Fetching fresh weather data from NASA...");
 
-    // --- DATA PROCESSING ---
-    // NASA returns generic arrays. We need to find the *most recent* relevant event.
-    
-    // Process Geomagnetic Storm (GST)
-    const latestStorm = gstRes.data.length > 0 ? gstRes.data[gstRes.data.length - 1] : null;
-    const kpIndex = latestStorm ? latestStorm.linkedEvents?.[0]?.kpIndex || 2 : 1; // Default to 1 (Calm) if empty
+        // --- DATE LOGIC ---
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+        
+        // --- API CALLS ---
+        const gstUrl = `https://api.nasa.gov/DONKI/GST?startDate=${startDate}&api_key=${API_KEY}`;
+        const flrUrl = `https://api.nasa.gov/DONKI/FLR?startDate=${startDate}&api_key=${API_KEY}`;
 
-    // Process Solar Flare
-    const latestFlare = flrRes.data.length > 0 ? flrRes.data[flrRes.data.length - 1] : null;
-    
-    // Clean up the data for the Frontend
-    const weatherData = {
-      // 1. Geomagnetic Status
-      geomagnetic: {
-        kpIndex: Math.round(kpIndex), // Round to nearest integer (0-9)
-        id: latestStorm?.gstID || 'nom-signal',
-        startTime: latestStorm?.startTime || new Date(),
-      },
-      
-      // 2. Solar Status
-      solar: {
-        class: latestFlare?.classType || 'B1.0', // e.g., "M1.2" or default calm "B1.0"
-        note: latestFlare?.note || 'Solar activity is nominal.',
-      },
-      
-      // 3. Derived "System Status" (Logic for the UI Text)
-      status: kpIndex >= 5 ? 'STORM ALERT' : 'NOMINAL',
-      color: kpIndex >= 5 ? 'red' : 'green' 
-    };
+        // Execute requests in parallel
+        const [gstRes, flrRes] = await Promise.all([
+            axios.get(gstUrl),
+            axios.get(flrUrl)
+        ]);
+
+        // --- DATA PROCESSING ---
+        // Process Geomagnetic Storm (GST)
+        const latestStorm = gstRes.data.length > 0 ? gstRes.data[gstRes.data.length - 1] : null;
+        // Default to 1 (Calm) if empty
+        const kpIndex = latestStorm ? latestStorm.linkedEvents?.[0]?.kpIndex || 2 : 1; 
+
+        // Process Solar Flare
+        const latestFlare = flrRes.data.length > 0 ? flrRes.data[flrRes.data.length - 1] : null;
+        
+        // Construct the clean object
+        const cleanData = {
+            geomagnetic: {
+                kpIndex: Math.round(kpIndex),
+                id: latestStorm?.gstID || 'nom-signal',
+                startTime: latestStorm?.startTime || new Date(),
+            },
+            solar: {
+                class: latestFlare?.classType || 'B1.0',
+                note: latestFlare?.note || 'Solar activity is nominal.',
+            },
+            status: kpIndex >= 5 ? 'STORM ALERT' : 'NOMINAL',
+            color: kpIndex >= 5 ? 'red' : 'green' 
+        };
+
+        // CRITICAL: Return the CLEAN object, not the Axios response
+        return cleanData;
+
+    }, 3600); // 4. Cache for 1 Hour (3600 seconds)
 
     res.status(200).json(weatherData);
 
   } catch (error) {
     console.error("NASA API Error:", error.message);
-    // Fallback data so the UI doesn't crash if NASA is down
+    // Fallback data
     res.status(200).json({
       geomagnetic: { kpIndex: 1, id: 'offline' },
       solar: { class: 'A0.0' },
@@ -69,4 +73,4 @@ const getCosmicWeather = async (req, res) => {
   }
 };
 
-export default getCosmicWeather
+export default getCosmicWeather;
