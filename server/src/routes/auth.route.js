@@ -4,17 +4,34 @@ import { googleCallback, logoutUser, getCurrentUser } from '../controllers/auth.
 
 const router = express.Router();
 
-// 1. Start Google Login Flow
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+/**
+ * @desc    Start Google OAuth Flow
+ * @route   GET /auth/google
+ * we include the 'offline' access and 'calendar' scope here in the middleware config
+ */
+router.get('/google', passport.authenticate('google', { 
+    scope: [
+        'profile', 
+        'email', 
+        'https://www.googleapis.com/auth/calendar.events'
+    ],
+    accessType: 'offline',
+    prompt: 'consent' 
+}));
 
-// 2. Google Callback (After user clicks "Allow")
+/**
+ * @desc    Google auth callback
+ * @route   GET /auth/google/callback
+ */
 router.get(
     '/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/' }), 
+    passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
     googleCallback
 );
 
-// 3. User Management
+/**
+ * @desc    User Management
+ */
 router.get('/logout', logoutUser);
 router.get('/current_user', getCurrentUser);
 

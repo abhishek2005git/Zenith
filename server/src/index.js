@@ -9,8 +9,13 @@ import launchRoutes from "./routes/launch.route.js"
 import weatherRoutes from "./routes/weather.route.js"
 import astronomyRoutes from "./routes/astronomy.route.js"
 import issRoutes from './routes/iss.routes.js';
+import calendarRoutes from './routes/calender.route.js';
+
 import { connectRedis } from './config/redis.js'; 
 import configurePassport from './config/passport.js';
+import { initCalendarWorker } from './workers/calendar.worker.js';
+import { apiLimiter, authLimiter, calendarLimiter } from './middleware/rateLimiter.js';
+
 
 import authRoutes from "./routes/auth.route.js"
 import userRoutes from './routes/user.route.js';
@@ -38,7 +43,7 @@ app.use(
     })
 );
 
-app.use((req, res, next) => {
+app.use(function(req, res, next) {
     if (req.session && !req.session.regenerate) {
         req.session.regenerate = (cb) => {
             cb();
@@ -55,19 +60,22 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+initCalendarWorker();
+
+
 connectDB();
 connectRedis(); 
 // client;
 
 app.get("/", (req, res) => {res.send("Hi there this is the / route of Zenith")})
 
-
-app.use("/api/launches", launchRoutes);
-app.use("/api/weather", weatherRoutes);
-app.use("/api/astronomy", astronomyRoutes);
-app.use('/api/iss', issRoutes);
-app.use('/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/auth', authLimiter, authRoutes);
+app.use("/api/launches", apiLimiter, launchRoutes);
+app.use("/api/weather", apiLimiter, weatherRoutes);
+app.use("/api/astronomy", apiLimiter, astronomyRoutes);
+app.use('/api/iss', apiLimiter, issRoutes);
+app.use('/api/user', apiLimiter,userRoutes);
+app.use('/api/calendar', calendarLimiter, calendarRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

@@ -17,5 +17,9 @@ export const logoutUser = (req, res, next) => {
 // @desc    Get current logged in user
 // @route   GET /auth/current_user
 export const getCurrentUser = (req, res) => {
-    res.status(200).json(req.user || null);
+    // Passport attaches the user object to 'req.user'
+    if (!req.user) {
+        return res.status(200).json(null);
+    }
+    res.status(200).json(req.user);
 };

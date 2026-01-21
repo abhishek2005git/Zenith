@@ -18,7 +18,18 @@ const UserSchema = new mongoose.Schema({
     required: true, 
     unique: true 
   },
-  favorites: { type: [String], default: [] } 
+  // --- NEW: OAUTH TOKENS ---
+  accessToken: {
+    type: String
+  },
+  refreshToken: {
+    type: String
+  },
+  // --- PREVIOUSLY ADDED ---
+  favorites: { 
+    type: [String], 
+    default: [] 
+  } 
 }, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);
