@@ -15,7 +15,7 @@ import { connectRedis } from './config/redis.js';
 import configurePassport from './config/passport.js';
 import { initCalendarWorker } from './workers/calendar.worker.js';
 import { apiLimiter, authLimiter, calendarLimiter } from './middleware/rateLimiter.js';
-
+import startKeepAlive from './utils/keepAlive.js'; 
 
 import authRoutes from "./routes/auth.route.js"
 import userRoutes from './routes/user.route.js';
@@ -67,6 +67,12 @@ app.use(function(req, res, next) {
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+if (process.env.NODE_ENV === 'production') {
+    const host = process.env.RENDER_EXTERNAL_HOSTNAME || 'zenith-backend-api.onrender.com';
+    const BACKEND_URL = `https://${host}`; 
+    startKeepAlive(BACKEND_URL);
+}
 
 initCalendarWorker();
 
