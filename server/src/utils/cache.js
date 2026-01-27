@@ -1,27 +1,44 @@
-import client from "../config/redis.js";
+import client from '../config/redis.js';
 
-const getOrSetCache = async(key, fetchFunction, expirySeconds = 1800) => {
+/**
+ * Smart Caching Wrapper
+ * Optimized to handle external API throttling (429 errors)
+ */
+const getOrSetCache = async (key, fetchFunction, expirySeconds = 3600) => {
+    let isRedisDown = false;
+
+    // 1. ATTEMPT TO GET FROM REDIS
     try {
-        const cachedData = await client.get(key)
-        if(cachedData) {
-            console.log(`Cache Hit: ${key}`);
-            return JSON.parse(cachedData);
+        if (client.isOpen) {
+            const cachedData = await client.get(key);
+            if (cachedData) {
+                console.log(`⚡ Cache HIT: ${key}`);
+                return JSON.parse(cachedData);
+            }
         }
+    } catch (redisError) {
+        console.error("⚠️ Redis Read Error:", redisError.message);
+        isRedisDown = true;
+    }
 
-        console.log(`Cache Miss: ${key}`);
+    // 2. FETCH FRESH DATA
+    try {
+        console.log(`🐢 Cache MISS/BYPASS: ${key}`);
         const freshData = await fetchFunction();
-        
-        if(freshData) {
+
+        // 3. SAVE TO REDIS (if connection is healthy)
+        if (!isRedisDown && client.isOpen && freshData) {
             await client.set(key, JSON.stringify(freshData), {
                 EX: expirySeconds
-            })
+            });
         }
 
         return freshData;
-    } catch (error) {
-        console.error("Redis Error (Bypassing):", error);
-        return await fetchFunction();
+    } catch (apiError) {
+        // If the EXTERNAL API is the one that failed (like a 429)
+        // We throw the error so the controller can handle fallbacks
+        throw apiError;
     }
-}
+};
 
-export default getOrSetCache
+export default getOrSetCache;

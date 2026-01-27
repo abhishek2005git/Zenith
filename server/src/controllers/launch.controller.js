@@ -13,7 +13,7 @@ export const getNextLaunch = async (req, res) => {
             headers: { 'User-Agent': 'Zenith-Project/1.0' } 
             });
             return response.data.results[0];
-        }, 600 )
+        }, 3600 )
         // const response = await axios.get('https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1', {
         //     headers: { 'User-Agent': 'Zenith-Project/1.0' } 
         // });
@@ -49,8 +49,19 @@ export const getNextLaunch = async (req, res) => {
         res.status(200).json(cleanedData);
         
     } catch (error) {
-        console.error(`Launch Controller error : ${error.message}`);
-        res.status(500).json({message: "Server error : could not fetch the data"})
+        console.error("🚀 Launch Controller Error:", error.message);
+        
+        // FAIL-SAFE: If throttled (429), return a mock mission so the UI doesn't break
+        res.status(200).json({
+            id: "throttled-fallback",
+            name: "Zenith | Orbital Signal Interrupted",
+            net: new Date(Date.now() + 86400000).toISOString(),
+            status: "THROTTLED",
+            agency: "System Warning",
+            pad: "External API Limit Reached",
+            rocketImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200",
+            description: "The Space Devs API limit (15 req/hour) has been reached. Real-time telemetry will resume shortly."
+        });
     }
 }
 

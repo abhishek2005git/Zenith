@@ -9,6 +9,9 @@ import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AuthProvider } from './context/AuthContext.jsx' 
+import Toast from './components/ui/Toast.jsx';
+
+
 
 // Create a client
 const queryClient = new QueryClient({
