@@ -26,20 +26,28 @@ configurePassport(passport);
 
 
 const app = express();
+app.set('trust proxy', 1); 
 const PORT = process.env.PORT || 4000;
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Your frontend URL
-    credentials: true, // Crucial for passing cookies!
+    origin: [
+        'http://localhost:5173', 
+        '[https://your-project-name.vercel.app](https://your-project-name.vercel.app)' // Replace with your actual Vercel URL later
+    ],
+    credentials: true,
     methods: "GET,POST,PUT,DELETE",
 }));
+
 
 app.use(express.json());
 
 app.use(
     cookieSession({
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        keys: [process.env.COOKIE_KEY] // Create this in your .env file
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        keys: [process.env.COOKIE_KEY],
+        // Apply these production settings:
+        sameSite: 'none', 
+        secure: true      
     })
 );
 
