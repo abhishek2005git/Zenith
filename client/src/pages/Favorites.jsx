@@ -19,7 +19,11 @@ const Favorites = ({ onOpenDrawer }) => {
         <h2 className="text-2xl font-bold text-white mb-2">Uplink Required</h2>
         <p className="text-gray-400 max-w-sm mb-8">Establish a secure connection to access your personal Fleet Command.</p>
         <button 
-          onClick={() => window.open('http://localhost:4000/auth/google', '_self')}
+          onClick={() => {
+            // Ensuring base URL is correctly accessed for environment-specific redirects
+            const apiUrl = import.meta.env?.VITE_API_URL || 'http://localhost:4000';
+            window.open(`${apiUrl}/auth/google`, '_self');
+          }}
           className="bg-space-accent text-black px-8 py-3 rounded-xl font-bold hover:bg-white transition-colors"
         >
           LOG IN TO ZENITH

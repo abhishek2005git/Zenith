@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios"
+import api from "../api/axios";
 
 const fetchNextLaunch = async () => {
-    const { data } = await axios.get('http://localhost:4000/api/launches/next');
+    const { data } = await api.get('/api/launches/next');
     return data;
 }
 
@@ -14,7 +15,7 @@ export const useNextLaunch = () => {
 }
 
 const fetchUpcoming = async () => {
-    const {data} = await axios.get('http://localhost:4000/api/launches/upcoming')
+    const {data} = await api.get('/api/launches/upcoming')
     return data
 }
 

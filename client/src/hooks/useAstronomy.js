@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import api from "../api/axios";
 
 const fetchAPOD = async () => {
-    const {data} = await axios.get('http://localhost:4000/api/astronomy/apod');
+    const {data} = await api.get('/api/astronomy/apod');
     return data
 }
 

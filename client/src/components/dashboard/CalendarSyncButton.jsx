@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Check, Loader2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import api from '../../api/axios';
 
 const CalendarSyncButton = ({ launch }) => {
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
@@ -11,7 +12,7 @@ const CalendarSyncButton = ({ launch }) => {
 
     try {
       // Pointing to your server on port 4000
-      await axios.post('http://localhost:4000/api/calendar/add-launch', {
+      await api.post('/api/calendar/add-launch', {
         launchId: launch.id,
         name: launch.name,
         net: launch.net,

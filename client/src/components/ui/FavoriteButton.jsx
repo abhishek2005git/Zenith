@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../api/axios';
 
 const FavoriteButton = ({ launchId, className = "" }) => {
   const { user, refreshUser } = useAuth(); // Import refreshUser
@@ -30,7 +31,7 @@ const FavoriteButton = ({ launchId, className = "" }) => {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:4000/api/user/favorites', 
+      await api.post('/api/user/favorites', 
         { launchId }, 
         { withCredentials: true }
       );

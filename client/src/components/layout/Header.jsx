@@ -7,7 +7,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogin = () => {
-    window.open('http://localhost:4000/auth/google', '_self');
+    const apiUrl = import.meta.env?.VITE_API_URL || 'http://localhost:4000';
+    window.open(`${apiUrl}/auth/google`, '_self');
   };
 
   return (

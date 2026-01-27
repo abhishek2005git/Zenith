@@ -1,8 +1,9 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import api from "../api/axios";
 
 const fetchWeather = async () => {
-    const {data} = await axios.get('http://localhost:4000/api/weather');
+    const {data} = await api.get('/api/weather');
     return data;
 }
 

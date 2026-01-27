@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -10,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   // Helper to fetch user data
   const fetchUser = async () => {
     try {
-      const { data } = await axios.get('http://localhost:4000/auth/current_user', {
+      const { data } = await api.get('/auth/current_user', {
           withCredentials: true
       });
       setUser(data || null);
@@ -28,7 +29,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = async () => {
-    window.open('http://localhost:4000/auth/logout', '_self');
+    const apiUrl = import.meta.env?.VITE_API_URL || 'http://localhost:4000';
+    const logoutUrl = `${apiUrl}/auth/logout`;
+    window.open(logoutUrl, '_self');
   };
 
   return (
