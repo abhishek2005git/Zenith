@@ -32,7 +32,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors({
     origin: [
         'http://localhost:5173', 
-        '[https://your-project-name.vercel.app](https://your-project-name.vercel.app)' // Replace with your actual Vercel URL later
+        'https://zenith-two-delta.vercel.app' 
     ],
     credentials: true,
     methods: "GET,POST,PUT,DELETE",
